@@ -44,7 +44,7 @@ archive_command = 'rsync %p /log/archive/%f'
 
 ---
 
-### 1.2 Create the WAL Archive Directory
+### 1.2 Create the WAL Archive Directory (if not already created)
 
 ```bash
 sudo mkdir -p /log/archive/
