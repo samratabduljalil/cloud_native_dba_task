@@ -108,5 +108,4 @@ postgres=#
 ```
 .
 ---
-ntation](https://www.postgresql.org/docs/16/)
-- [PostgreSQL YUM Repository](https://yum.postgresql.org/)
+
