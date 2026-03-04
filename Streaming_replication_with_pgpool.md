@@ -42,7 +42,8 @@ This SOP documents the process of installing and configuring **pgpool-II** as a 
 
 ### Architecture Diagram
 
-![PostgreSQL Streaming Replication with pgpool-II](./pgpool_streaming_replication.png)
+<img width="1041" height="1042" alt="streaming replication with pgpool drawio" src="https://github.com/user-attachments/assets/a9b6675b-64d0-458e-8a1e-9e3fc0de1ae2" />
+
 
 *pgpool-II (192.168.109.130) sits between the client and both PostgreSQL nodes. It routes **write** queries to the Master and **read** queries to the Slave via load balancing. WAL logs stream continuously from the Master's WAL Sender to the Slave's WAL Receiver over TCP/IP. pgpool-II also performs SR health checks against both nodes to detect failures and trigger failover.*
 
@@ -329,9 +330,10 @@ psql -h 192.168.109.130 -p 9999 -U pgpool -d postgres -c "SHOW pool_nodes;"
 Expected output shows both backend nodes (master and replica) with their status, roles, and weights.
 
 
+<img width="1677" height="97" alt="Screenshot 2026-03-03 114555" src="https://github.com/user-attachments/assets/a26dc3b1-b87f-4a77-a2df-6191b1eae845" />
 
 
 
 ---
 
-*Document prepared for internal infrastructure use. Update version and date upon any configuration changes.*
+
