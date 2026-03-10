@@ -58,8 +58,8 @@ ls /mnt/test_disk
 sudo blkid /dev/nvme0n2p1
 
 # Step 10: Add to /etc/fstab for permanent mount
-# In vim: press i to insert, add the line, press Esc, then type :wq and Enter
-sudo vim /etc/fstab
+# In nano: press i to insert, add the line, press Esc, then type :wq and Enter
+sudo nano /etc/fstab
 # ADD THIS LINE at the bottom (replace UUID with your actual value):
 # UUID=YOUR-UUID-HERE  /mnt/test_disk  xfs  defaults  0  0
 
@@ -134,7 +134,7 @@ sudo touch /mnt/lvm_data/lvm_test.txt
 ls /mnt/lvm_data
 
 # Step 14: Add to /etc/fstab for permanent mount
-sudo vim /etc/fstab
+sudo nano /etc/fstab
 # ADD THIS LINE at the bottom:
 # /dev/myvg/mylv  /mnt/lvm_data  ext4  defaults  0  0
 
