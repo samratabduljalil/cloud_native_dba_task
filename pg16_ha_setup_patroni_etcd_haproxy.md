@@ -24,6 +24,9 @@
 
 ## 1. Infrastructure Overview
 
+<img width="1513" height="1041" alt="patroni drawio" src="https://github.com/user-attachments/assets/91294b9a-26e5-48d1-8426-8c32c136588b" />
+
+
 | Hostname | IP Address       | Role              |
 |----------|-----------------|-------------------|
 | pghelp01 | 192.168.109.133 | etcd · Patroni · HAProxy · Keepalived MASTER |
