@@ -730,6 +730,7 @@ patronictl -c /etc/patroni/patroni.yml list
 ### Step 4 — Start Patroni on pghelp02 and pghelp03
 
 ```bash
+systemctl enable patroni
 systemctl start patroni
 journalctl -u patroni -f
 ```
