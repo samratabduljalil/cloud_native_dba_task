@@ -12,7 +12,7 @@
 5. [Harden SSH Configuration](#4-harden-ssh-configuration)
 6. [Firewall Configuration](#5-firewall-configuration)
 7. [Troubleshooting](#6-troubleshooting)
-8. [Quick Reference Cheat Sheet](#quick-reference-cheat-sheet)
+8. [Quick Reference Cheat Sheet](#7-quick-reference-cheat-sheet)
 
 ---
 
