@@ -40,7 +40,7 @@ Your Browser
 ### A1 — Switch to Root
 
 ```bash
-sudo su -
+sudo su 
 ```
 
 ### A2 — Install Apache
@@ -71,7 +71,7 @@ mkdir -p /var/www/my.com/html
 chown -R apache:apache /var/www/my.com/html
 chmod -R 755 /var/www/my.com
 
-cat > /var/www/my.com/html/index.html << 'EOF'
+nano /var/www/my.com/html/index.html 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,7 +89,7 @@ cat > /var/www/my.com/html/index.html << 'EOF'
     <p>IP: 192.168.1.101</p>
 </body>
 </html>
-EOF
+
 ```
 
 On **VM3** (Backend 2):
@@ -99,7 +99,7 @@ mkdir -p /var/www/my.com/html
 chown -R apache:apache /var/www/my.com/html
 chmod -R 755 /var/www/my.com
 
-cat > /var/www/my.com/html/index.html << 'EOF'
+nano /var/www/my.com/html/index.html 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,7 +117,7 @@ cat > /var/www/my.com/html/index.html << 'EOF'
     <p>IP: 192.168.1.102</p>
 </body>
 </html>
-EOF
+
 ```
 
 > The different colors/labels help you visually confirm load balancing is working.
@@ -125,7 +125,7 @@ EOF
 ### A5 — Create Virtual Host Config (Both VM2 & VM3)
 
 ```bash
-cat > /etc/httpd/conf.d/my.com.conf << 'EOF'
+nano /etc/httpd/conf.d/my.com.conf 
 <VirtualHost *:80>
     ServerName   my.com
     ServerAlias  www.my.com
@@ -140,21 +140,14 @@ cat > /etc/httpd/conf.d/my.com.conf << 'EOF'
     ErrorLog  /var/log/httpd/my.com_error.log
     CustomLog /var/log/httpd/my.com_access.log combined
 </VirtualHost>
-EOF
+
 
 apachectl configtest
 systemctl reload httpd
 ```
 
-### A6 — SELinux (Both VM2 & VM3)
 
-```bash
-restorecon -Rv /var/www/my.com/html
-chcon -Rt httpd_sys_content_t /var/www/my.com/html
-getenforce
-```
-
-### A7 — Quick Test on Each Backend
+### A6 — Quick Test on Each Backend
 
 ```bash
 # On VM2 — should return Backend 1 page
@@ -219,13 +212,7 @@ slotmem_shm_module (shared)
 ### B6 — Create Load Balancer Virtual Host Config
 
 ```bash
-cat > /etc/httpd/conf.d/lb-my.com.conf << 'EOF'
-# Load the required proxy modules
-LoadModule proxy_module           modules/mod_proxy.so
-LoadModule proxy_http_module      modules/mod_proxy_http.so
-LoadModule proxy_balancer_module  modules/mod_proxy_balancer.so
-LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so
-LoadModule slotmem_shm_module     modules/mod_slotmem_shm.so
+nano /etc/httpd/conf.d/lb-my.com.conf
 
 # Define the backend cluster
 <Proxy "balancer://mycluster">
@@ -263,7 +250,7 @@ LoadModule slotmem_shm_module     modules/mod_slotmem_shm.so
     ErrorLog  /var/log/httpd/lb-my.com_error.log
     CustomLog /var/log/httpd/lb-my.com_access.log combined
 </VirtualHost>
-EOF
+
 
 # Test and apply
 apachectl configtest
@@ -297,17 +284,6 @@ grep "my.com" /etc/hosts
 ping my.com
 ```
 
-**Windows client** — edit as Administrator:
-
-```
-C:\Windows\System32\drivers\etc\hosts
-```
-
-Add this line:
-
-```
-192.168.1.100   my.com www.my.com
-```
 
 ---
 
@@ -322,57 +298,8 @@ curl http://my.com
 curl http://my.com
 ```
 
-### D2 — Loop Test (Best Way to Confirm Round-Robin)
-
-```bash
-for i in {1..10}; do
-  echo -n "Request $i → "
-  curl -s http://my.com | grep -o 'Backend Server [0-9]*'
-done
-```
-
-Expected output:
-```
-Request 1  → Backend Server 1
-Request 2  → Backend Server 2
-Request 3  → Backend Server 1
-Request 4  → Backend Server 2
-...
-```
-
-### D3 — Balancer Manager Web UI
-
-Open in your browser:
-
-```
-http://my.com/balancer-manager
-```
-
-Or via curl on VM1:
-
-```bash
-curl http://127.0.0.1/balancer-manager
-```
-
 ---
 
-## PART E — Failover Test
-
-```bash
-# 1. Stop Apache on VM2 to simulate a server failure
-#    (Run this on VM2)
-systemctl stop httpd
-
-# 2. On client — all requests now go to VM3 only (auto-failover)
-for i in {1..6}; do
-  echo -n "Request $i → "
-  curl -s http://my.com | grep -o 'Backend Server [0-9]*'
-done
-
-# 3. Restart VM2 — it automatically rejoins the pool after retry= seconds
-#    (Run this on VM2)
-systemctl start httpd
-```
 
 ---
 
@@ -424,34 +351,4 @@ tail -f /var/log/httpd/lb-my.com_access.log
 
 ---
 
-## Full Architecture Summary
 
-```
-Client Browser
-      │
-      │  DNS lookup: my.com → 192.168.1.100  (/etc/hosts)
-      ▼
-┌──────────────────────────────────────────┐
-│            VM1 — Load Balancer           │
-│            192.168.1.100                 │
-│                                          │
-│  Apache httpd                            │
-│  mod_proxy + mod_proxy_balancer          │
-│  VirtualHost my.com → mycluster         │
-│  Method: Round-Robin (byrequests)        │
-│  Failover: auto on backend timeout       │
-└───────────────┬──────────────────────────┘
-                │
-        Round-Robin / Failover
-                │
-      ┌─────────┴──────────┐
-      ▼                    ▼
-┌──────────────┐    ┌──────────────┐
-│     VM2      │    │     VM3      │
-│ 192.168.1.101│    │ 192.168.1.102│
-│  Backend 1   │    │  Backend 2   │
-│  Apache httpd│    │  Apache httpd│
-│  /var/www/   │    │  /var/www/   │
-│  my.com/html │    │  my.com/html │
-└──────────────┘    └──────────────┘
-```
