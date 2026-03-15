@@ -52,25 +52,27 @@ sudo sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
 ```bash
 sudo mkdir -p /var/www/html
+sudo chown -R nginx:nginx /var/www/html
 
-sudo tee /var/www/html/index.html <<'EOF'
+nano /var/www/html/index.html 
 <!DOCTYPE html>
 <html>
 <body>
   <h1>Hello from web1 !!!</h1>
 </body>
 </html>
-EOF
 
-sudo chown -R nginx:nginx /var/www/html
+
+
 ```
 
 ### Create Nginx config
 
 ```bash
-sudo tee /etc/nginx/conf.d/web1.conf <<'EOF'
+nano /etc/nginx/conf.d/web1.conf 
 server {
     listen 80;
+    server_name web2 192.168.1.12 localhost;
 
     root /var/www/html;
     index index.html;
@@ -79,13 +81,14 @@ server {
         try_files $uri $uri/ =404;
     }
 }
-EOF
+
 ```
 
 ### Remove default config & reload
 
 ```bash
 sudo rm -f /etc/nginx/conf.d/default.conf
+sudo rm -f /usr/share/nginx/html/index.html
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -93,7 +96,7 @@ sudo systemctl reload nginx
 ### Quick test from web1 itself
 
 ```bash
-curl http://localhost
+curl http://192.168.1.12
 # Expected: Hello from web1 !!!
 ```
 
@@ -105,26 +108,24 @@ curl http://localhost
 
 ```bash
 sudo mkdir -p /var/www/html
-
-sudo tee /var/www/html/index.html <<'EOF'
+sudo chown -R nginx:nginx /var/www/html
+nano /var/www/html/index.html 
 <!DOCTYPE html>
 <html>
 <body>
   <h1>Hello from web2 !!!</h1>
 </body>
 </html>
-EOF
 
-sudo chown -R nginx:nginx /var/www/html
 ```
 
 ### Create Nginx config
 
 ```bash
-sudo tee /etc/nginx/conf.d/web2.conf <<'EOF'
+nano /etc/nginx/conf.d/web2.conf 
 server {
     listen 80;
-
+    server_name web2 192.168.1.13 localhost;
     root /var/www/html;
     index index.html;
 
@@ -132,13 +133,14 @@ server {
         try_files $uri $uri/ =404;
     }
 }
-EOF
+
 ```
 
 ### Remove default config & reload
 
 ```bash
 sudo rm -f /etc/nginx/conf.d/default.conf
+sudo rm -f /usr/share/nginx/html/index.html
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -146,7 +148,7 @@ sudo systemctl reload nginx
 ### Quick test from web2 itself
 
 ```bash
-curl http://localhost
+curl http://192.168.1.13
 # Expected: Hello from web2 !!!
 ```
 
@@ -157,7 +159,7 @@ curl http://localhost
 ### Create Load Balancer config
 
 ```bash
-sudo tee /etc/nginx/conf.d/lb.conf <<'EOF'
+nano /etc/nginx/conf.d/lb.conf 
 upstream backend_pool {
     server 192.168.1.11:80;   # web1
     server 192.168.1.12:80;   # web2
@@ -176,7 +178,7 @@ server {
         proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
     }
 }
-EOF
+
 ```
 
 ### Remove default config & reload
@@ -233,27 +235,6 @@ Expected output (alternates each request):
 
 ---
 
-## STEP 8 — Test from Your Host Machine (Laptop/PC)
-
-If you also want `curl www.my.com` to work from your **host machine** (not just the VMs):
-
-### On Linux/Mac host:
-
-```bash
-echo "192.168.1.10  www.my.com" | sudo tee -a /etc/hosts
-```
-
-### On Windows host (run as Administrator):
-
-```powershell
-Add-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value "192.168.1.10  www.my.com"
-```
-
-Then test:
-
-```bash
-curl http://www.my.com
-```
 
 ---
 
